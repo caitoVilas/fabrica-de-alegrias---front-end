@@ -8,7 +8,9 @@ d.addEventListener('DOMContentLoaded', e => {
     cancelRegistro('.cancel-registro');
     cancelLogin('.cancel-login');
     registroUsuarios('.btn_registro');
-    loginUsuarios('.btn-login')
+    loginUsuarios('.btn-login');
+    logout();
+    
 });
 
 function registroUsuario(registro){
@@ -245,7 +247,10 @@ function loginUsuarios(btn){
     const $BtnL = d.querySelector('.btn-login');
     const $btnR = d.querySelector('.registro');
     const $btnl = d.querySelector('.login');
+    const $btnu = d.querySelector('.b-user');
     const $panel =d.getElementById('panel-login');
+    const $divv = d.querySelector('.sin-ingresar');
+    const $divc = d.querySelector('.ingresado');
     
 
     $BtnL.addEventListener('click', e => {
@@ -264,7 +269,6 @@ function loginUsuarios(btn){
             "password": claveUsuario
         }
 
-        console.log(req);
 
         fetch("http://localhost:8080/auth/login",{
             method: "POST",
@@ -286,6 +290,16 @@ function loginUsuarios(btn){
                 $btnl.removeAttribute('disabled');
 
                 //todo : cambio botones
+                $btnl.classList.add('none');
+                $btnR.classList.add('none');
+                $btnu.textContent = usuario;
+                $btnu.classList.remove('none');
+
+                //Cambiamos el contenido
+                $divc.classList.remove('none');
+                $divv.classList.add('none');
+               
+
 
             },2000);
 
@@ -297,6 +311,7 @@ function loginUsuarios(btn){
                 token = data.token;
                 console.log(usuario);
                 console.log(token);
+                cargaGaleria();
 
         })
         .catch(error => {
@@ -316,6 +331,84 @@ function loginUsuarios(btn){
 
 
     
+
+}
+
+// ********  LOGOUT ***********************
+
+function logout(){
+
+    // CAPTURAMOS LOS ELEMENTOS
+
+    const $btnR = d.querySelector('.registro');
+    const $btnl = d.querySelector('.login');
+    const $btnu = d.querySelector('.b-user');
+    const $divv = d.querySelector('.sin-ingresar');
+    const $divc = d.querySelector('.ingresado');
+
+    const $btnC = d.getElementById('btn_cerrar');
+
+    $btnC.addEventListener('click', e => {
+
+        $btnu.classList.add('none');
+        $btnR.classList.remove('none');
+        $btnl.classList.remove('none');
+        $divv.classList.remove('none');
+        $divc.classList.add('none');
+        usuario = '';
+        token = '';
+        location.reload();
+    });
+}
+
+function cargaGaleria(){
+
+    const $contenido = d.getElementById('contenido');
+    
+    fetch("http://localhost:8080/productos/all",{
+            method: "GET",
+            mode: "cors",
+            headers: {'content-type':'application/json',
+                      'Authorization': 'Bearer ' + token}
+        })
+        .then(response => response.ok? response.json(): Promise.reject(response))
+        .then(data => {
+
+            data.forEach(jug => {
+                let card_juguete = d.createElement('div');
+                card_juguete.classList.add('col-12');
+                card_juguete.classList.add('col-md-6');
+                card_juguete.classList.add('col-lg-3');
+                let imagen = "assets/galeria/"+jug.imagen;
+                // creamos la plantilla
+                card_juguete.innerHTML = `
+                <div class="card">
+                  <div class="card-header bg-warning text-dark">
+                    <h4 class="card-title">${jug.nombre}</h4>
+                  </div>
+                  <div class="card body bg-secondary">
+                    <img src=${imagen} alt="" class="img-galeria">
+                    <p class="text-white">${jug.descripcion}</p>
+                    <h2 class="text-white text-center">$ ${jug.precio}</h2>
+                  </div>
+                  <div class="card-footer bg-warning text-primary">
+                    <button class="btn btn-primary btn-sm">
+                      <i class="fas fa-search"></i>
+                    </button>
+                    <button class="btn btn-success btn-sm">
+                      <i class="fas fa-cart-arrow-down"></i>
+                    </button>
+                  </div>
+                </div>
+                `
+                $contenido.appendChild(card_juguete);
+            });
+
+            
+        });
+
+
+
 
 }
 
